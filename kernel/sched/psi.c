@@ -172,6 +172,8 @@ __setup("psi=", setup_psi);
 #define WINDOW_MAX_US 10000000	/* Max window size is 10s */
 #define UPDATES_PER_WINDOW 10	/* 10 updates per window */
 
+u64 psi_full_max;
+
 /* Sampling frequency in nanoseconds */
 static u64 psi_period __read_mostly;
 
@@ -556,6 +558,69 @@ static u64 update_triggers(struct psi_group *group, u64 now)
 				sizeof(group->polling_total));
 
 	return now + group->poll_min_period;
+}
+
+/*
+ * Allows sending more than one event per window.
+ */
+void psi_emergency_trigger(void)
+{
+	struct psi_group *group = &psi_system;
+	struct psi_trigger *t;
+	u64 now;
+
+	if (static_branch_likely(&psi_disabled))
+		return;
+
+	/*
+	 * In unlikely case that OOM was triggered while adding/
+	 * removing triggers.
+	 */
+	if (!mutex_trylock(&group->trigger_lock))
+		return;
+
+	now = sched_clock();
+	list_for_each_entry(t, &group->triggers, node) {
+
+		/* Generate an event */
+		if (cmpxchg(&t->event, 0, 1) == 0) {
+			mod_timer(&t->wdog_timer, jiffies +
+					  nsecs_to_jiffies(2 * t->win.size));
+			wake_up_interruptible(&t->event_wait);
+		}
+		t->last_event_time = now;
+	}
+	mutex_unlock(&group->trigger_lock);
+}
+
+/*
+ * Return true if any trigger is active.
+ */
+bool psi_is_trigger_active(void)
+{
+	struct psi_group *group = &psi_system;
+	struct psi_trigger *t;
+	bool trigger_active = false;
+	u64 now;
+
+	if (static_branch_likely(&psi_disabled))
+		return false;
+
+	/*
+	 * In unlikely case that OOM was triggered while adding/
+	 * removing triggers.
+	 */
+	if (!mutex_trylock(&group->trigger_lock))
+		return true;
+
+	now = sched_clock();
+	list_for_each_entry(t, &group->triggers, node) {
+
+		if (now <= t->last_event_time + t->win.size)
+			trigger_active = true;
+	}
+	mutex_unlock(&group->trigger_lock);
+	return trigger_active;
 }
 
 /*

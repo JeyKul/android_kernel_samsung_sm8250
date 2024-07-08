@@ -35,6 +35,8 @@
 #include "sec_debug_internal.h"
 #include "sec_debug_summary_extern.h"
 
+#include <asm/io.h>
+
 static struct sec_debug_summary *secdbg_summary;
 static struct sec_debug_summary_data_apss *secdbg_apss;
 
