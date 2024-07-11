@@ -39,6 +39,7 @@ struct rw_semaphore {
 	 */
 	struct task_struct *owner;
 #endif
+
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 	struct lockdep_map	dep_map;
 #endif

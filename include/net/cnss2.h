@@ -263,4 +263,6 @@ extern int cnss_set_pcie_gen_speed(struct device *dev, u8 pcie_gen_speed);
 extern int cnss_pci_get_reg_dump(struct device *dev, uint8_t *buffer,
 				 uint32_t len);
 
+extern int cnss_sysfs_get_pm_info(void);
+extern void cnss_sysfs_update_driver_status(int32_t new_status, void *version, void *softap);
 #endif /* _NET_CNSS2_H */
