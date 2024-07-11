@@ -27,6 +27,10 @@
 #include <linux/fscrypt.h>
 #include <linux/fsverity.h>
 
+#ifdef CONFIG_FS_HPB
+#include <linux/fs_hpb.h>
+#endif
+
 #ifdef CONFIG_F2FS_CHECK_FS
 #define f2fs_bug_on(sbi, condition)	BUG_ON(condition)
 #else
@@ -467,6 +471,11 @@ static inline bool __has_cursum_space(struct f2fs_journal *journal,
 #define F2FS_IOC_FSGETXATTR		FS_IOC_FSGETXATTR
 #define F2FS_IOC_FSSETXATTR		FS_IOC_FSSETXATTR
 
+#ifdef CONFIG_DDAR
+#define	F2FS_IOC_GET_DD_POLICY		FS_IOC_GET_DD_POLICY
+#define	F2FS_IOC_SET_DD_POLICY		FS_IOC_SET_DD_POLICY
+#endif
+
 struct f2fs_gc_range {
 	u32 sync;
 	u64 start;
@@ -761,6 +770,9 @@ enum {
 	FI_COMPRESSED_FILE,	/* indicate file's data can be compressed */
 	FI_MMAP_FILE,		/* indicate file was mmapped */
 	FI_MAX,			/* max flag, never be used */
+#ifdef CONFIG_FS_HPB
+	FI_HPB_INODE,		/* HPB */
+#endif
 };
 
 struct f2fs_inode_info {
@@ -898,6 +910,13 @@ enum nid_state {
 	PREALLOC_NID,		/* it is preallocated */
 	MAX_NID_STATE,
 };
+ 
+enum nat_state {
+	TOTAL_NAT,
+	DIRTY_NAT,
+	RECLAIMABLE_NAT,
+	MAX_NAT_STATE,
+};
 
 struct f2fs_nm_info {
 	block_t nat_blkaddr;		/* base disk address of NAT */
@@ -914,8 +933,7 @@ struct f2fs_nm_info {
 	struct rw_semaphore nat_tree_lock;	/* protect nat_tree_lock */
 	struct list_head nat_entries;	/* cached nat entry list (clean) */
 	spinlock_t nat_list_lock;	/* protect clean nat entry list */
-	unsigned int nat_cnt;		/* the # of cached nat entries */
-	unsigned int dirty_nat_cnt;	/* total num of nat entries in set */
+	unsigned int nat_cnt[MAX_NAT_STATE]; /* the # of cached nat entries */
 	unsigned int nat_blocks;	/* # of nat blocks */
 
 	/* free node ids management */

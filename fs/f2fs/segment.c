@@ -3253,7 +3253,11 @@ void f2fs_do_write_meta_page(struct f2fs_sb_info *sbi, struct page *page,
 		.type = META,
 		.temp = HOT,
 		.op = REQ_OP_WRITE,
+#ifdef CONFIG_FS_HPB
+		.op_flags = REQ_SYNC | REQ_META | REQ_PRIO | REQ_HPB_PREFER,
+#else
 		.op_flags = REQ_SYNC | REQ_META | REQ_PRIO,
+#endif
 		.old_blkaddr = page->index,
 		.new_blkaddr = page->index,
 		.page = page,
@@ -3314,6 +3318,9 @@ int f2fs_inplace_write_data(struct f2fs_io_info *fio)
 			  __func__, segno);
 		return -EFSCORRUPTED;
 	}
+
+	invalidate_mapping_pages(META_MAPPING(sbi),
+				fio->new_blkaddr, fio->new_blkaddr);
 
 	stat_inc_inplace_blocks(fio->sbi);
 

@@ -13,6 +13,7 @@
 #include <linux/kthread.h>
 #include <linux/delay.h>
 #include <linux/freezer.h>
+#include <uapi/linux/sched/types.h>
 #include <linux/sched/signal.h>
 
 #include "f2fs.h"
@@ -1120,10 +1121,8 @@ next_step:
 			int err;
 
 			if (S_ISREG(inode->i_mode)) {
-				if (!down_write_trylock(&fi->i_gc_rwsem[READ])) {
-					sbi->skipped_gc_rwsem++;
+				if (!down_write_trylock(&fi->i_gc_rwsem[READ]))
 					continue;
-				}
 				if (!down_write_trylock(
 						&fi->i_gc_rwsem[WRITE])) {
 					sbi->skipped_gc_rwsem++;
