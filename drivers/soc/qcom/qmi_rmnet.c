@@ -195,14 +195,14 @@ static void qmi_rmnet_update_flow_map(struct rmnet_flow_map *itm,
 int qmi_rmnet_flow_control(struct net_device *dev, u32 mq_idx, int enable)
 {
 	struct netdev_queue *q;
-
+	
 	if (unlikely(mq_idx >= dev->num_tx_queues))
 		return 0;
 
 	q = netdev_get_tx_queue(dev, mq_idx);
 	if (unlikely(!q))
 		return 0;
-
+				
 	if (enable)
 		netif_tx_wake_queue(q);
 	else
@@ -446,7 +446,6 @@ static int qmi_rmnet_add_flow(struct net_device *dev, struct tcmsg *tcm,
 	new_map.mq_idx = tcm->tcm_handle;
 	trace_dfc_flow_info(dev->name, new_map.bearer_id, new_map.flow_id,
 			    new_map.ip_type, new_map.mq_idx, 1);
-
 again:
 	spin_lock_bh(&qos_info->qos_lock);
 
@@ -535,8 +534,9 @@ qmi_rmnet_del_flow(struct net_device *dev, struct tcmsg *tcm,
 		kfree(itm);
 	}
 
-	if (list_empty(&qos_info->flow_head))
+	if (list_empty(&qos_info->flow_head)) {
 		netif_tx_wake_all_queues(dev);
+	}
 
 	spin_unlock_bh(&qos_info->qos_lock);
 
@@ -1206,7 +1206,6 @@ static void qmi_rmnet_check_stats(struct work_struct *work)
 		if (!dl_msg_active &&
 		    !rmnet_all_flows_enabled(real_work->port))
 			goto end;
-
 		/* Deregister to suppress QMI DFC and DL marker */
 		if (qmi_rmnet_set_powersave_mode(real_work->port, 1) < 0)
 			goto end;
@@ -1254,8 +1253,7 @@ void qmi_rmnet_work_init(void *port)
 	if (rmnet_ps_wq)
 		return;
 
-	rmnet_ps_wq = alloc_workqueue("rmnet_powersave_work",
-				      WQ_CPU_INTENSIVE, 1);
+	rmnet_ps_wq = create_freezable_workqueue("rmnet_powersave_work");
 
 	if (!rmnet_ps_wq)
 		return;
