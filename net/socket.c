@@ -1641,7 +1641,6 @@ int __sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
 		}
 		if (!err)
 			sockev_notify(SOCKEV_BIND, sock);
-
 		fput_light(sock->file, fput_needed);
 	}
 	return err;
@@ -1676,7 +1675,6 @@ int __sys_listen(int fd, int backlog)
 
 		if (!err)
 			sockev_notify(SOCKEV_LISTEN, sock);
-
 		fput_light(sock->file, fput_needed);
 	}
 	return err;

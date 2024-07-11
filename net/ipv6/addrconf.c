@@ -930,6 +930,10 @@ void inet6_ifa_finish_destroy(struct inet6_ifaddr *ifp)
 	kfree_rcu(ifp, rcu);
 }
 
+#ifdef CONFIG_MPTCP
+	EXPORT_SYMBOL(inet6_ifa_finish_destroy);
+#endif
+
 static void
 ipv6_link_dev_addr(struct inet6_dev *idev, struct inet6_ifaddr *ifp)
 {
@@ -4123,6 +4127,10 @@ static void addrconf_dad_work(struct work_struct *w)
 	}
 
 	ifp->dad_probes--;
+	if (!strcmp(ifp->idev->dev->name, "aware_data0"))
+		addrconf_mod_dad_work(ifp,
+					NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME)/10);
+	else
 	addrconf_mod_dad_work(ifp,
 			      NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME));
 	spin_unlock(&ifp->lock);
