@@ -24,6 +24,12 @@ config SEC_GTS7L_PROJECT
 	help
 	  Support for Samsung GTS7L Project
 
+config MACH_GTS7L_EUR_OPEN
+	default n
+	bool "Samsung GTS7L EUR OPEN"
+	help
+	  Support for Samsung GTS7L EUR OPEN device.
+
 config SEC_GTS7XL_PROJECT
 	default n
 	bool "Samsung GTS7XL Project"
@@ -53,3 +59,9 @@ config MACH_C2Q_KOR_SINGLE
 	bool "Samsung C2Q KOR SQ"
 	help
 	  Support for Samsung C2Q KOR SQ device.
+	  
+config MACH_GTS7LWIFI_EUR_OPEN
+	default n
+	bool "Samsung GTS7LWIFI EUR OPEN"
+	help
+	  Support for Samsung GTS7LWIFI EUR OPEN device.
