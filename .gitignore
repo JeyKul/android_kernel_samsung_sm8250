@@ -138,3 +138,5 @@ kernel/configs/android-*.cfg
 
 # build folder
 out/
+error.log
+log.txt

@@ -10,3 +10,16 @@ config MACH_R8Q_EUR_OPEN
 	help
 	  Support for Samsung R8Q EUR OPEN device.
 
+config SEC_GTS7XL_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung GTS7XL Project"
+	help
+	  Support for Samsung GTS7XL Project
+
+config SEC_GTS7L_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung GTS7L Project"
+	help
+	  Support for Samsung GTS7L Project
