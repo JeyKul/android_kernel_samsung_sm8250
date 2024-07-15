@@ -51,7 +51,7 @@
 #endif /* CONFIG_ANDROID_TIMED_OUTPUT */
 
 #if defined(CONFIG_BATTERY_SAMSUNG)
-#include "../battery_v2/include/sec_charging_common.h"
+#include "../drivers/battery_v2/include/sec_charging_common.h"
 #endif
 
 struct cs40l2x_private {
