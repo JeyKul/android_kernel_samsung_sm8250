@@ -1,16 +1,69 @@
 #!/bin/bash
 
-CHIPSET_NAME=kona
-KERNEL_ARCH=arm64
-mkdir out
+#!/bin/bash
 
-BUILD_CROSS_COMPILE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-androidkernel-
-KERNEL_LLVM_BIN=$(pwd)/toolchain/llvm-arm-toolchain-ship/10.0/bin/clang
-#CLANG_TRIPLE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-KERNEL_LLVM_BIN=$(pwd)/toolchain/llvm-arm-toolchain-ship/10.0/bin/clang
-KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y"
+# Function to display the menu
+display_menu() {
+    echo "Please select a Device to build."
+    echo "1. Tab S7+ WIFI"
+    echo "2. Tab S7+ 5G"
+    echo "3. Tab S7 LTE"
+    echo "4. Note 20 Ultra 5G (KOR)"
+    echo "5. Galaxy S20FE"
+#    echo "3. Tab S7 LTE"
+    echo "6. Exit"
+}
 
-make -j8 -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE vendor/gts7xlwifi_eur_open_defconfig
-make -j8 -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE
- 
-cp out/arch/arm64/boot/Image $(pwd)/arch/arm64/boot/Image
+# Function to set environment variables
+set_environment() {
+    case $1 in
+        1)
+            export NAME="Tab S7+ WIFI"
+            export DEVICE="gts7xlwifi_eur_open"
+            ;;
+        2)
+            export NAME="Tab S7+ 5g"
+            export DEVICE="gts7xl_eur_openx"
+            ;;
+        3)
+            export NAME="Tab S7 LTE"
+            export DEVICE="gts7l_eur_open"
+            ;;
+        4)
+            export NAME="Note 20 Ultra 5G (KOREAN)"
+            export DEVICE="c2q_kor_singlew"
+            ;;
+        5)
+            export NAME="Galaxy S20FE"
+            export DEVICE="r8q_eur_openx"
+            ;;
+        6)
+            echo "Exiting..."
+            exit 0
+            ;;
+        *)
+            echo "Invalid option. Please try again."
+            ;;
+    esac
+}
+
+# Function to proceed to the next command
+next_command() {
+    echo "Building for $NAME"
+    PATH=$(pwd)/toolchain/clang-r522817/bin:$PATH
+    PATH=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin:$PATH
+    make -j$(nproc --all) O=out ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-android- vendor/$(echo $DEVICE)_defconfig LLVM=1 LLVM_IAS=1
+    make -j$(nproc --all) O=out ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-android- LLVM=1 LLVM_IAS=1
+}
+
+# Main script logic
+while true; do
+    display_menu
+    read -p "Enter your choice: " choice
+    set_environment $choice
+
+    if [[ $choice -ge 1 && $choice -le 3 ]]; then
+        next_command
+        break
+    fi
+done
