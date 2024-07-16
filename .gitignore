@@ -140,3 +140,4 @@ kernel/configs/android-*.cfg
 out/
 error.log
 log.txt
+m.txt
